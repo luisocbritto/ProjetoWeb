@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block titulo %}Apontamentos{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">Apontamentos de horas</h1>
+    <a href="{% url 'cadastrar_apontamento' %}" class="btn btn-primario"><i class="bi bi-plus-lg"></i> Novo apontamento</a>
+</div>
+
+<form method="get" action="{% url 'listar_apontamentos' %}" class="card card-body mb-3">
+    <div class="row g-2">
+        <div class="col-12 col-md-3">
+            <label for="obra" class="form-label small mb-1">Obra</label>
+            <select id="obra" name="obra" class="form-select">
+                <option value="">Todas</option>
+                {% for o in obras %}
+                <option value="{{ o.id }}" {% if o.id|stringformat:"s" == filtros.obra %}selected{% endif %}>{{ o.nome_obra }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="maquina" class="form-label small mb-1">Máquina</label>
+            <select id="maquina" name="maquina" class="form-select">
+                <option value="">Todas</option>
+                {% for m in maquinas %}
+                <option value="{{ m.id }}" {% if m.id|stringformat:"s" == filtros.maquina %}selected{% endif %}>{{ m.prefixo }} - {{ m.tipo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label for="data_inicio" class="form-label small mb-1">De</label>
+            <input type="date" id="data_inicio" name="data_inicio" value="{{ filtros.data_inicio }}" class="form-control">
+        </div>
+        <div class="col-6 col-md-2">
+            <label for="data_fim" class="form-label small mb-1">Até</label>
+            <input type="date" id="data_fim" name="data_fim" value="{{ filtros.data_fim }}" class="form-control">
+        </div>
+        <div class="col-12 col-md-2 d-flex gap-2 align-items-end">
+            <button type="submit" class="btn btn-primario flex-fill"><i class="bi bi-funnel"></i> Filtrar</button>
+            <a href="{% url 'listar_apontamentos' %}" class="btn btn-outline-secondary" title="Limpar filtros"><i class="bi bi-x-lg"></i></a>
+        </div>
+    </div>
+</form>
+
+<p class="mb-2">Total no filtro: <strong>{{ total_horas|floatformat:1 }} horas</strong> ·
+    <a href="{% url 'relatorio_horas' %}?{{ parametros }}">ver relatório consolidado</a></p>
+
+{% if apontamentos %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr><th>Data</th><th>Máquina</th><th>Obra</th><th class="text-end">Inicial</th><th class="text-end">Final</th><th class="text-end">Horas</th><th>Registrado por</th><th></th></tr>
+            </thead>
+            <tbody>
+            {% for a in apontamentos %}
+                <tr>
+                    <td>{{ a.data_apontamento|date:"d/m/Y" }}</td>
+                    <td class="fw-semibold">{{ a.maquina.prefixo }}</td>
+                    <td>{{ a.obra.nome_obra }}</td>
+                    <td class="text-end">{{ a.horimetro_inicial|floatformat:1 }}</td>
+                    <td class="text-end">{{ a.horimetro_final|floatformat:1 }}</td>
+                    <td class="text-end fw-semibold">{{ a.total_horas|floatformat:1 }}</td>
+                    <td>{{ a.usuario }}</td>
+                    <td class="text-end"><a href="{% url 'detalhar_apontamento' a.id %}" class="btn btn-sm btn-outline-secondary">Detalhes</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include 'sgcc/_paginacao.html' with pagina=apontamentos %}
+{% else %}
+<div class="alert alert-light border">Nenhum apontamento encontrado para os filtros informados.</div>
+{% endif %}
+{% endblock %}

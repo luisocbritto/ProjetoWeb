@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block conteudo %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'listar_obras' %}">Obras</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ titulo }}</li>
+</ol></nav>
+
+<h1>{{ titulo }}</h1>
+<p class="text-muted">Campos com <span class="text-danger">*</span> são obrigatórios. Informe o CEP e clique em
+    <strong>Buscar CEP</strong> para preencher o endereço pelo ViaCEP.</p>
+
+{% if not clientes %}
+<div class="alert alert-warning">Cadastre um cliente antes de criar uma obra. <a href="{% url 'cadastrar_cliente' %}">Novo cliente</a></div>
+{% endif %}
+
+<form method="post" class="card card-body" novalidate>
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label for="cliente_id" class="form-label">Cliente <span class="text-danger">*</span></label>
+            <select id="cliente_id" name="cliente_id" class="form-select {% if erros.cliente_id %}is-invalid{% endif %}">
+                <option value="">Selecione...</option>
+                {% for c in clientes %}
+                <option value="{{ c.id }}" {% if c.id|stringformat:"s" == dados.cliente_id %}selected{% endif %}>{{ c.nome_fantasia }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">{{ erros.cliente_id }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="nome_obra" class="form-label">Nome da obra <span class="text-danger">*</span></label>
+            <input type="text" id="nome_obra" name="nome_obra" maxlength="150" value="{{ dados.nome_obra|default:'' }}"
+                   class="form-control {% if erros.nome_obra %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.nome_obra }}</div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <label for="cep" class="form-label">CEP <span class="text-danger">*</span></label>
+            <div class="input-group has-validation">
+                <input type="text" id="cep" name="cep" maxlength="9" inputmode="numeric" placeholder="00000-000"
+                       value="{{ dados.cep|default:'' }}" class="form-control {% if erros.cep %}is-invalid{% endif %}">
+                <button type="button" id="btn-buscar-cep" class="btn btn-outline-secondary"><i class="bi bi-search"></i> Buscar CEP</button>
+                <div class="invalid-feedback">{{ erros.cep }}</div>
+            </div>
+            <div id="mensagem-cep" class="form-text" aria-live="polite"></div>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="logradouro" class="form-label">Logradouro</label>
+            <input type="text" id="logradouro" name="logradouro" maxlength="200" value="{{ dados.logradouro|default:'' }}"
+                   class="form-control {% if erros.logradouro %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.logradouro }}</div>
+        </div>
+        <div class="col-12 col-md-2">
+            <label for="numero" class="form-label">Número</label>
+            <input type="text" id="numero" name="numero" maxlength="20" placeholder="S/N" value="{{ dados.numero|default:'' }}"
+                   class="form-control {% if erros.numero %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.numero }}</div>
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="bairro" class="form-label">Bairro</label>
+            <input type="text" id="bairro" name="bairro" maxlength="100" value="{{ dados.bairro|default:'' }}"
+                   class="form-control {% if erros.bairro %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.bairro }}</div>
+        </div>
+        <div class="col-12 col-md-5">
+            <label for="cidade" class="form-label">Cidade <span class="text-danger">*</span></label>
+            <input type="text" id="cidade" name="cidade" maxlength="100" value="{{ dados.cidade|default:'' }}"
+                   class="form-control {% if erros.cidade %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.cidade }}</div>
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="estado" class="form-label">UF <span class="text-danger">*</span></label>
+            <select id="estado" name="estado" class="form-select {% if erros.estado %}is-invalid{% endif %}">
+                <option value="">Selecione...</option>
+                {% for uf in estados %}
+                <option value="{{ uf }}" {% if uf == dados.estado %}selected{% endif %}>{{ uf }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">{{ erros.estado }}</div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+            <select id="status" name="status" class="form-select {% if erros.status %}is-invalid{% endif %}">
+                {% for valor, nome in status_choices %}
+                <option value="{{ valor }}" {% if valor == dados.status %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">{{ erros.status }}</div>
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="data_inicio" class="form-label">Data de início <span class="text-danger">*</span></label>
+            <input type="date" id="data_inicio" name="data_inicio" value="{{ dados.data_inicio|default:'' }}"
+                   class="form-control {% if erros.data_inicio %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.data_inicio }}</div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primario"><i class="bi bi-check-lg"></i> Salvar obra</button>
+        <a href="{% if obra %}{% url 'detalhar_obra' obra.id %}{% else %}{% url 'listar_obras' %}{% endif %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Busca o endereço pelo servidor (que consulta o ViaCEP) e preenche os campos.
+// Se a consulta falhar, os campos continuam livres para preenchimento manual.
+document.getElementById('btn-buscar-cep').addEventListener('click', function () {
+    const cep = document.getElementById('cep').value.replace(/\D/g, '');
+    const mensagem = document.getElementById('mensagem-cep');
+
+    if (cep.length !== 8) {
+        mensagem.className = 'form-text text-danger';
+        mensagem.textContent = 'Informe um CEP com 8 dígitos.';
+        return;
+    }
+
+    mensagem.className = 'form-text';
+    mensagem.textContent = 'Consultando o ViaCEP...';
+
+    fetch("{% url 'buscar_cep_json' %}?cep=" + cep)
+        .then(function (resposta) { return resposta.json(); })
+        .then(function (dados) {
+            if (dados.ok) {
+                document.getElementById('logradouro').value = dados.endereco.logradouro;
+                document.getElementById('bairro').value = dados.endereco.bairro;
+                document.getElementById('cidade').value = dados.endereco.cidade;
+                document.getElementById('estado').value = dados.endereco.estado;
+                mensagem.className = 'form-text text-success';
+                mensagem.textContent = 'Endereço encontrado. Confira e informe o número.';
+                document.getElementById('numero').focus();
+            } else {
+                mensagem.className = 'form-text text-danger';
+                mensagem.textContent = dados.erro;
+            }
+        })
+        .catch(function () {
+            mensagem.className = 'form-text text-danger';
+            mensagem.textContent = 'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.';
+        });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block titulo %}Confirmar exclusão{% endblock %}
+
+{% block conteudo %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card border-danger">
+            <div class="card-body p-4">
+                <h1 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Confirmar exclusão</h1>
+                <p>Deseja realmente excluir {% if tipo == 'obra' or tipo == 'máquina' or tipo == 'ordem de manutenção' %}a{% else %}o{% endif %} {{ tipo }}:</p>
+                <p class="fs-5 fw-semibold">{{ nome }}</p>
+                {% if aviso %}<div class="alert alert-warning">{{ aviso }}</div>{% endif %}
+                <p class="text-muted small">Esta ação não pode ser desfeita. Registros com histórico vinculado não são excluídos.</p>
+
+                <form method="post" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Sim, excluir</button>
+                    <a href="{{ url_cancelar }}" class="btn btn-outline-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

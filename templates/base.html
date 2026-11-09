@@ -1,0 +1,91 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titulo %}Gestão Operacional{% endblock %} · Ás Terraplanagem</title>
+    <link rel="icon" href="{% static 'img/logo.svg' %}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{% static 'css/estilo.css' %}" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-sistema">
+    <div class="container-fluid px-3 px-lg-4">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'index' %}">
+            <img src="{% static 'img/logo.svg' %}" alt="" width="40" height="40">
+            <span>
+                <span class="marca-nome d-block">Ás Terraplanagem</span>
+                <span class="marca-assinatura d-block">Gestão Operacional</span>
+            </span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
+                aria-controls="menu" aria-expanded="false" aria-label="Abrir menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menu">
+            {% with rota=request.resolver_match.url_name %}
+            <ul class="navbar-nav me-auto ms-lg-4">
+                <li class="nav-item"><a class="nav-link {% if rota == 'index' %}active{% endif %}" href="{% url 'index' %}"><i class="bi bi-speedometer2"></i> Painel</a></li>
+                <li class="nav-item"><a class="nav-link {% if 'obra' in rota %}active{% endif %}" href="{% url 'listar_obras' %}"><i class="bi bi-cone-striped"></i> Obras</a></li>
+                <li class="nav-item"><a class="nav-link {% if 'maquina' in rota %}active{% endif %}" href="{% url 'listar_maquinas' %}"><i class="bi bi-truck"></i> Máquinas</a></li>
+                <li class="nav-item"><a class="nav-link {% if 'apontamento' in rota %}active{% endif %}" href="{% url 'listar_apontamentos' %}"><i class="bi bi-stopwatch"></i> Apontamentos</a></li>
+                <li class="nav-item"><a class="nav-link {% if 'manutenc' in rota %}active{% endif %}" href="{% url 'listar_manutencoes' %}"><i class="bi bi-wrench-adjustable"></i> Manutenção</a></li>
+                <li class="nav-item"><a class="nav-link {% if 'cliente' in rota %}active{% endif %}" href="{% url 'listar_clientes' %}"><i class="bi bi-building"></i> Clientes</a></li>
+                <li class="nav-item"><a class="nav-link {% if 'relatorio' in rota %}active{% endif %}" href="{% url 'relatorio_horas' %}"><i class="bi bi-bar-chart"></i> Relatório</a></li>
+                <li class="nav-item"><a class="nav-link {% if rota == 'consultar_cep' %}active{% endif %}" href="{% url 'consultar_cep' %}"><i class="bi bi-geo-alt"></i> CEP</a></li>
+            </ul>
+            {% endwith %}
+
+            <div class="dropdown">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i> {{ user }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><span class="dropdown-item-text small text-muted">Perfil: {{ user.get_perfil_display }}</span></li>
+                    <li><a class="dropdown-item" href="{% url 'sobre' %}">Sobre o sistema</a></li>
+                    <li><a class="dropdown-item" href="{% url 'api_docs' %}" target="_blank" rel="noopener">Documentação da API</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Sair</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</nav>
+
+<main class="container-fluid px-3 px-lg-4 py-4 flex-grow-1">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block conteudo %}{% endblock %}
+</main>
+
+<footer class="py-3 border-top bg-white">
+    <div class="container-fluid px-3 px-lg-4 d-flex flex-wrap justify-content-between gap-2">
+        <span>Ás Terraplanagem — Gestão Operacional · Projeto acadêmico de Desenvolvimento Web</span>
+        <span><a href="{% url 'sobre' %}">Sobre</a> · Endereços via <a href="https://viacep.com.br" target="_blank" rel="noopener">ViaCEP</a></span>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block titulo %}Clientes{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">Clientes</h1>
+    <a href="{% url 'cadastrar_cliente' %}" class="btn btn-primario"><i class="bi bi-plus-lg"></i> Novo cliente</a>
+</div>
+
+<form method="get" action="{% url 'listar_clientes' %}" class="card card-body mb-3">
+    <div class="row g-2">
+        <div class="col-12 col-md-9">
+            <label for="busca" class="form-label visually-hidden">Buscar</label>
+            <input type="search" id="busca" name="busca" value="{{ busca }}" class="form-control"
+                   placeholder="Buscar por razão social, nome fantasia ou CNPJ">
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primario flex-fill"><i class="bi bi-search"></i> Buscar</button>
+            {% if busca %}<a href="{% url 'listar_clientes' %}" class="btn btn-outline-secondary">Limpar</a>{% endif %}
+        </div>
+    </div>
+</form>
+
+{% if clientes %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr><th>Nome fantasia</th><th>Razão social</th><th>CNPJ</th><th>Telefone</th><th class="text-center">Obras</th><th></th></tr>
+            </thead>
+            <tbody>
+            {% for cliente in clientes %}
+                <tr>
+                    <td class="fw-semibold">{{ cliente.nome_fantasia }}</td>
+                    <td>{{ cliente.razao_social }}</td>
+                    <td class="text-nowrap">{{ cliente.cnpj_formatado }}</td>
+                    <td class="text-nowrap">{{ cliente.telefone|default:"—" }}</td>
+                    <td class="text-center">{{ cliente.qtd_obras }}</td>
+                    <td class="text-end"><a href="{% url 'detalhar_cliente' cliente.id %}" class="btn btn-sm btn-outline-secondary">Detalhes</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include 'sgcc/_paginacao.html' with pagina=clientes %}
+{% else %}
+<div class="alert alert-light border">{% if busca %}Nenhum cliente encontrado para "{{ busca }}".{% else %}Ainda não há clientes cadastrados.{% endif %}</div>
+{% endif %}
+{% endblock %}

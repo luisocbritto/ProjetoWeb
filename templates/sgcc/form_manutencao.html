@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block conteudo %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'listar_manutencoes' %}">Manutenção</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ titulo }}</li>
+</ol></nav>
+
+<h1>{{ titulo }}</h1>
+{% if not manutencao %}
+<p class="text-muted">Ao abrir a ordem, a máquina passa para <strong>Em manutenção</strong> e deixa de aceitar apontamentos.</p>
+{% endif %}
+
+<form method="post" class="card card-body" novalidate>
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label for="maquina_id" class="form-label">Máquina <span class="text-danger">*</span></label>
+            {% if manutencao %}
+            <input type="text" id="maquina_id" class="form-control" value="{{ manutencao.maquina }}" disabled>
+            {% else %}
+            <select id="maquina_id" name="maquina_id" class="form-select {% if erros.maquina %}is-invalid{% endif %}">
+                <option value="">Selecione...</option>
+                {% for m in maquinas %}
+                <option value="{{ m.id }}" {% if m.id|stringformat:"s" == dados.maquina_id %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">{{ erros.maquina }}</div>
+            {% endif %}
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="tipo" class="form-label">Tipo <span class="text-danger">*</span></label>
+            <select id="tipo" name="tipo" class="form-select {% if erros.tipo %}is-invalid{% endif %}">
+                {% for valor, nome in tipo_choices %}
+                <option value="{{ valor }}" {% if valor == dados.tipo %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">{{ erros.tipo }}</div>
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="mecanico_id" class="form-label">Mecânico responsável</label>
+            <select id="mecanico_id" name="mecanico_id" class="form-select {% if erros.mecanico_id %}is-invalid{% endif %}">
+                <option value="">Não atribuído</option>
+                {% for u in mecanicos %}
+                <option value="{{ u.id }}" {% if u.id|stringformat:"s" == dados.mecanico_id %}selected{% endif %}>{{ u }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">{{ erros.mecanico_id }}</div>
+        </div>
+
+        {% if manutencao %}
+        <div class="col-12 col-md-4">
+            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+            <select id="status" name="status" class="form-select {% if erros.status %}is-invalid{% endif %}">
+                {% for valor, nome in status_choices %}
+                <option value="{{ valor }}" {% if valor == dados.status %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+            <div class="invalid-feedback">{{ erros.status }}</div>
+            <div class="form-text">Ao marcar "Concluída", a máquina volta a ficar disponível.</div>
+        </div>
+        {% endif %}
+
+        <div class="col-12">
+            <label for="descricao_defeito" class="form-label">Descrição do defeito ou necessidade <span class="text-danger">*</span></label>
+            <textarea id="descricao_defeito" name="descricao_defeito" rows="3"
+                      class="form-control {% if erros.descricao_defeito %}is-invalid{% endif %}">{{ dados.descricao_defeito|default:'' }}</textarea>
+            <div class="invalid-feedback">{{ erros.descricao_defeito }}</div>
+        </div>
+
+        {% if manutencao %}
+        <div class="col-12">
+            <label for="descricao_servico" class="form-label">Serviço realizado <span class="text-muted small">(obrigatório para concluir)</span></label>
+            <textarea id="descricao_servico" name="descricao_servico" rows="3"
+                      class="form-control {% if erros.descricao_servico %}is-invalid{% endif %}">{{ dados.descricao_servico|default:'' }}</textarea>
+            <div class="invalid-feedback">{{ erros.descricao_servico }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primario"><i class="bi bi-check-lg"></i> {% if manutencao %}Salvar ordem{% else %}Abrir ordem de serviço{% endif %}</button>
+        <a href="{% if manutencao %}{% url 'detalhar_manutencao' manutencao.id %}{% else %}{% url 'listar_manutencoes' %}{% endif %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

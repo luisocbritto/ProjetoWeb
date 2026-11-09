@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block titulo %}Manutenção{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">Ordens de manutenção</h1>
+    <a href="{% url 'cadastrar_manutencao' %}" class="btn btn-primario"><i class="bi bi-plus-lg"></i> Abrir ordem de serviço</a>
+</div>
+
+<form method="get" action="{% url 'listar_manutencoes' %}" class="card card-body mb-3">
+    <div class="row g-2">
+        <div class="col-12 col-md-6">
+            <label for="busca" class="form-label visually-hidden">Buscar</label>
+            <input type="search" id="busca" name="busca" value="{{ busca }}" class="form-control"
+                   placeholder="Buscar por prefixo da máquina ou defeito">
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="status" class="form-label visually-hidden">Status</label>
+            <select id="status" name="status" class="form-select">
+                <option value="">Todos os status</option>
+                {% for valor, nome in status_choices %}
+                <option value="{{ valor }}" {% if valor == status_filtro %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primario flex-fill"><i class="bi bi-search"></i> Buscar</button>
+            {% if busca or status_filtro %}<a href="{% url 'listar_manutencoes' %}" class="btn btn-outline-secondary">Limpar</a>{% endif %}
+        </div>
+    </div>
+</form>
+
+{% if manutencoes %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr><th>OS</th><th>Máquina</th><th>Tipo</th><th>Início</th><th>Mecânico</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+            {% for m in manutencoes %}
+                <tr>
+                    <td class="fw-semibold">#{{ m.id }}</td>
+                    <td>{{ m.maquina.prefixo }}</td>
+                    <td>{{ m.get_tipo_display }}</td>
+                    <td>{{ m.data_inicio|date:"d/m/Y" }}</td>
+                    <td>{{ m.mecanico|default:"—" }}</td>
+                    <td><span class="status status-{{ m.status }}">{{ m.get_status_display }}</span></td>
+                    <td class="text-end"><a href="{% url 'detalhar_manutencao' m.id %}" class="btn btn-sm btn-outline-secondary">Detalhes</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include 'sgcc/_paginacao.html' with pagina=manutencoes %}
+{% else %}
+<div class="alert alert-light border">Nenhuma ordem de manutenção encontrada.</div>
+{% endif %}
+{% endblock %}

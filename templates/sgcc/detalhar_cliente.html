@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ cliente.nome_fantasia }}{% endblock %}
+
+{% block conteudo %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'listar_clientes' %}">Clientes</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ cliente.nome_fantasia }}</li>
+</ol></nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="mb-0">{{ cliente.nome_fantasia }}</h1>
+    <div class="d-flex gap-2">
+        <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{% url 'deletar_cliente' cliente.id %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Excluir</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-4">
+        <div class="card"><div class="card-body">
+            <h2>Dados cadastrais</h2>
+            <dl class="mb-0">
+                <dt>Razão social</dt><dd>{{ cliente.razao_social }}</dd>
+                <dt>CNPJ</dt><dd>{{ cliente.cnpj_formatado }}</dd>
+                <dt>Telefone</dt><dd>{{ cliente.telefone|default:"—" }}</dd>
+                <dt>E-mail</dt><dd>{{ cliente.email|default:"—" }}</dd>
+                <dt>Cadastrado em</dt><dd class="mb-0">{{ cliente.criado_em|date:"d/m/Y H:i" }}</dd>
+            </dl>
+        </div></div>
+    </div>
+    <div class="col-12 col-lg-8">
+        <div class="card"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="mb-0">Obras do cliente</h2>
+                <a href="{% url 'cadastrar_obra' %}?cliente_id={{ cliente.id }}" class="btn btn-sm btn-primario"><i class="bi bi-plus-lg"></i> Nova obra</a>
+            </div>
+            {% if obras %}
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>Obra</th><th>Cidade</th><th>Status</th><th class="text-end">Horas</th></tr></thead>
+                    <tbody>
+                    {% for obra in obras %}
+                        <tr>
+                            <td><a href="{% url 'detalhar_obra' obra.id %}">{{ obra.nome_obra }}</a></td>
+                            <td>{{ obra.cidade }}/{{ obra.estado }}</td>
+                            <td><span class="status status-{{ obra.status }}">{{ obra.get_status_display }}</span></td>
+                            <td class="text-end">{{ obra.horas|default:0|floatformat:1 }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">Este cliente ainda não possui obras.</p>
+            {% endif %}
+        </div></div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block conteudo %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'listar_clientes' %}">Clientes</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ titulo }}</li>
+</ol></nav>
+
+<h1>{{ titulo }}</h1>
+<p class="text-muted">Campos com <span class="text-danger">*</span> são obrigatórios.</p>
+
+<form method="post" class="card card-body" novalidate>
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label for="razao_social" class="form-label">Razão social <span class="text-danger">*</span></label>
+            <input type="text" id="razao_social" name="razao_social" maxlength="200" value="{{ dados.razao_social|default:'' }}"
+                   class="form-control {% if erros.razao_social %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.razao_social }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="nome_fantasia" class="form-label">Nome fantasia <span class="text-danger">*</span></label>
+            <input type="text" id="nome_fantasia" name="nome_fantasia" maxlength="200" value="{{ dados.nome_fantasia|default:'' }}"
+                   class="form-control {% if erros.nome_fantasia %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.nome_fantasia }}</div>
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="cnpj" class="form-label">CNPJ <span class="text-danger">*</span></label>
+            <input type="text" id="cnpj" name="cnpj" maxlength="18" inputmode="numeric" placeholder="00.000.000/0000-00"
+                   value="{{ dados.cnpj|default:'' }}" class="form-control {% if erros.cnpj %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.cnpj }}</div>
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="telefone" class="form-label">Telefone</label>
+            <input type="tel" id="telefone" name="telefone" maxlength="20" placeholder="(62) 3000-0000"
+                   value="{{ dados.telefone|default:'' }}" class="form-control {% if erros.telefone %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.telefone }}</div>
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="email" class="form-label">E-mail</label>
+            <input type="email" id="email" name="email" maxlength="254" value="{{ dados.email|default:'' }}"
+                   class="form-control {% if erros.email %}is-invalid{% endif %}">
+            <div class="invalid-feedback">{{ erros.email }}</div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primario"><i class="bi bi-check-lg"></i> Salvar cliente</button>
+        <a href="{% if cliente %}{% url 'detalhar_cliente' cliente.id %}{% else %}{% url 'listar_clientes' %}{% endif %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+</form>
+{% endblock %}
