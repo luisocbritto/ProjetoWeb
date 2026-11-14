@@ -1,0 +1,420 @@
+# Modelo de Dados --- Gestão AS Terraplanagem
+
+## 1. Objetivo
+
+Este documento descreve a estrutura relacional prevista para armazenar
+as informações do sistema Gestão AS Terraplanagem. O modelo contempla
+usuários, clientes, obras, máquinas, apontamentos de horas e ordens de
+manutenção.
+
+O banco escolhido é o PostgreSQL. Os modelos serão definidos em classes
+do Django e convertidos em tabelas por meio das migrações. Os nomes de
+tabelas apresentados seguem a especificação inicial e podem depender da
+configuração final dos aplicativos Django.
+
+## 2. Regras gerais do modelo
+
+O modelo foi organizado para manter os registros operacionais
+relacionados entre si. Um apontamento precisa identificar a obra, a
+máquina e o usuário que realizou o registro. Uma ordem de manutenção
+precisa estar ligada à máquina atendida. Uma obra, por sua vez, pertence
+a um cliente.
+
+As chaves estrangeiras ajudam a evitar registros sem referência válida.
+As regras de negócio, como a validação dos horímetros, também deverão
+ser verificadas pela aplicação antes da gravação.
+
+## 3. Entidades e tabelas
+
+### 3.1 Usuários --- `usuarios_usuario`
+
+A tabela de usuários mantém as informações necessárias para autenticação
+e controle de acesso. A especificação prevê herança do `AbstractUser` do
+Django.
+
+  -----------------------------------------------------------------------
+  Campo                   Tipo                    Regra / finalidade
+  ----------------------- ----------------------- -----------------------
+  `id`                    `BigAutoField`          Chave primária
+
+  `username`              `VARCHAR(150)`          Nome de usuário, único
+
+  `email`                 `VARCHAR(254)`          E-mail, único
+
+  `password`              `VARCHAR(128)`          Campo de senha
+                                                  gerenciado pelo Django
+
+  `perfil`                `VARCHAR(20)`           Perfil de acesso
+
+  `cpf`                   `VARCHAR(11)`           CPF único, pode ser
+                                                  nulo
+
+  `is_active`             `BOOLEAN`               Indica se a conta está
+                                                  ativa; padrão `True`
+  -----------------------------------------------------------------------
+
+Os valores de perfil previstos são `ADMIN`, `ENGENHEIRO`, `APONTADOR` e
+`MECANICO`. O sistema deve utilizar esses perfis para controlar as ações
+disponíveis para cada usuário.
+
+O campo `password` deve ser tratado pelos mecanismos de autenticação do
+Django. O valor armazenado não deve ser uma senha em texto puro.
+
+### 3.2 Clientes --- `clientes_cliente`
+
+Armazena os dados cadastrais dos clientes que contratam os serviços de
+terraplanagem.
+
+  Campo             Tipo             Regra / finalidade
+  ----------------- ---------------- --------------------------------------
+  `id`              `BigAutoField`   Chave primária
+  `razao_social`    `VARCHAR(200)`   Razão social
+  `nome_fantasia`   `VARCHAR(200)`   Nome fantasia
+  `cnpj`            `VARCHAR(14)`    CNPJ único, armazenado sem pontuação
+  `telefone`        `VARCHAR(20)`    Telefone de contato
+  `email`           `VARCHAR(254)`   E-mail de contato
+  `criado_em`       `DATETIME`       Data e hora do cadastro
+
+Um cliente pode possuir várias obras. A relação com as obras permite
+consultar quais canteiros estão associados a cada contratante.
+
+### 3.3 Obras --- `obras_obra`
+
+Armazena os dados das obras e dos canteiros em que as máquinas são
+utilizadas.
+
+  ------------------------------------------------------------------------
+  Campo                   Tipo                    Regra / finalidade
+  ----------------------- ----------------------- ------------------------
+  `id`                    `BigAutoField`          Chave primária
+
+  `cliente_id`            Chave estrangeira       Referência a
+                                                  `clientes_cliente.id`;
+                                                  exclusão protegida
+
+  `nome_obra`             `VARCHAR(150)`          Nome da obra
+
+  `cep`                   `VARCHAR(8)`            CEP sem pontuação
+
+  `logradouro`            `VARCHAR(200)`          Rua, avenida ou via
+
+  `numero`                `VARCHAR(20)`           Número ou identificação
+                                                  equivalente
+
+  `bairro`                `VARCHAR(100)`          Bairro
+
+  `cidade`                `VARCHAR(100)`          Município
+
+  `estado`                `VARCHAR(2)`            UF
+
+  `status`                `VARCHAR(20)`           Situação da obra
+
+  `data_inicio`           `DATE`                  Data de início
+  ------------------------------------------------------------------------
+
+Os status previstos são `EM_ANDAMENTO`, `CONCLUIDA` e `PAUSADA`. A obra
+deve estar associada a um cliente existente.
+
+O CEP poderá ser utilizado para consultar o endereço no ViaCEP, mas os
+campos de endereço também deverão permitir preenchimento manual quando a
+consulta não funcionar.
+
+### 3.4 Máquinas --- `maquinas_maquina`
+
+Representa os equipamentos que compõem a frota.
+
+  -----------------------------------------------------------------------
+  Campo                   Tipo                    Regra / finalidade
+  ----------------------- ----------------------- -----------------------
+  `id`                    `BigAutoField`          Chave primária
+
+  `prefixo`               `VARCHAR(20)`           Identificador único da
+                                                  máquina
+
+  `tipo`                  `VARCHAR(50)`           Tipo de equipamento
+
+  `marca`                 `VARCHAR(50)`           Fabricante
+
+  `modelo`                `VARCHAR(50)`           Modelo
+
+  `horimetro_atual`       `DECIMAL(10,1)`         Horímetro mais recente;
+                                                  padrão `0.0`
+
+  `status`                `VARCHAR(20)`           Situação operacional
+  -----------------------------------------------------------------------
+
+Exemplos de prefixos são `ESC-001` e `TRAT-002`. Os status previstos são
+`DISPONIVEL`, `EM_USO` e `MANUTENCAO`.
+
+O horímetro atual é importante porque serve como referência para o
+próximo apontamento e para o acompanhamento das manutenções. Sua
+atualização precisa ocorrer de forma controlada, depois da validação do
+apontamento.
+
+### 3.5 Apontamentos --- `apontamentos_apontamentohoras`
+
+Registra o uso de uma máquina em uma obra e em uma data.
+
+  ------------------------------------------------------------------------
+  Campo                   Tipo                    Regra / finalidade
+  ----------------------- ----------------------- ------------------------
+  `id`                    `BigAutoField`          Chave primária
+
+  `obra_id`               Chave estrangeira       Referência a
+                                                  `obras_obra.id`;
+                                                  exclusão protegida
+
+  `maquina_id`            Chave estrangeira       Referência a
+                                                  `maquinas_maquina.id`;
+                                                  exclusão protegida
+
+  `usuario_id`            Chave estrangeira       Referência a
+                                                  `usuarios_usuario.id`;
+                                                  exclusão protegida
+
+  `data_apontamento`      `DATE`                  Data do apontamento
+
+  `horimetro_inicial`     `DECIMAL(10,1)`         Leitura inicial
+
+  `horimetro_final`       `DECIMAL(10,1)`         Leitura final
+
+  `total_horas`           `DECIMAL(10,1)`         Diferença calculada e
+                                                  validada
+
+  `observacoes`           `TEXT`                  Observações opcionais
+
+  `criado_em`             `DATETIME`              Data e hora de criação
+  ------------------------------------------------------------------------
+
+O total de horas deverá ser calculado pela diferença entre o horímetro
+final e o inicial. O sistema não deve aceitar um valor final menor ou
+igual ao inicial.
+
+O registro guarda referências para a obra, a máquina e o usuário que
+realizou o apontamento. Isso permite consultar o histórico por
+equipamento, local de trabalho, período e responsável.
+
+### 3.6 Manutenções --- `manutencao_manutencao`
+
+Mantém o histórico das ordens de serviço das máquinas.
+
+  ------------------------------------------------------------------------
+  Campo                   Tipo                    Regra / finalidade
+  ----------------------- ----------------------- ------------------------
+  `id`                    Chave primária          Identificador da ordem
+
+  `maquina_id`            Chave estrangeira       Referência a
+                                                  `maquinas_maquina.id`;
+                                                  exclusão protegida
+
+  `mecanico_id`           Chave estrangeira       Referência a
+                                                  `usuarios_usuario.id`;
+                                                  pode ser nulo
+
+  `tipo`                  `VARCHAR(20)`           `PREVENTIVA` ou
+                                                  `CORRETIVA`
+
+  `horimetro_registro`    `DECIMAL(10,1)`         Horímetro no momento do
+                                                  registro
+
+  `descricao_defeito`     `TEXT`                  Descrição do problema ou
+                                                  necessidade
+
+  `descricao_servico`     `TEXT`                  Serviço realizado; pode
+                                                  ser nulo
+
+  `data_inicio`           `DATETIME`              Início da ordem
+
+  `data_conclusao`        `DATETIME`              Conclusão; pode ser nulo
+
+  `status`                `VARCHAR(20)`           Estado da ordem
+  ------------------------------------------------------------------------
+
+Os status previstos são `ABERTA`, `EM_ANDAMENTO` e `CONCLUIDA`. A data
+de conclusão pode ficar vazia enquanto o serviço estiver pendente.
+
+O vínculo com o mecânico pode ser nulo para permitir que a ordem exista
+antes da atribuição de um responsável. O histórico da ordem deve ser
+preservado para consultas posteriores.
+
+## 4. Relacionamentos e cardinalidades
+
+  -----------------------------------------------------------------------
+  Relacionamento          Cardinalidade           Explicação
+  ----------------------- ----------------------- -----------------------
+  Cliente → Obra          1:N                     Um cliente pode ter
+                                                  várias obras; cada obra
+                                                  pertence a um cliente
+
+  Obra → Apontamento      1:N                     Uma obra pode possuir
+                                                  vários apontamentos
+
+  Máquina → Apontamento   1:N                     Uma máquina pode
+                                                  aparecer em vários
+                                                  apontamentos ao longo
+                                                  do tempo
+
+  Usuário → Apontamento   1:N                     Um usuário pode
+                                                  registrar vários
+                                                  apontamentos
+
+  Máquina → Manutenção    1:N                     Uma máquina pode
+                                                  possuir várias ordens
+                                                  de manutenção
+
+  Usuário → Manutenção    1:N, opcional no lado   Um mecânico pode
+                          da ordem                atender várias ordens;
+                                                  uma ordem pode estar
+                                                  sem mecânico atribuído
+  -----------------------------------------------------------------------
+
+## 5. Diagrama Entidade-Relacionamento
+
+O diagrama abaixo representa as relações principais descritas no modelo.
+Ele pode ser usado como ponto de partida para criar uma versão visual em
+uma ferramenta de modelagem.
+
+``` mermaid
+erDiagram
+    CLIENTE ||--o{ OBRA : possui
+    OBRA ||--o{ APONTAMENTO : recebe
+    MAQUINA ||--o{ APONTAMENTO : registra
+    USUARIO ||--o{ APONTAMENTO : cria
+    MAQUINA ||--o{ MANUTENCAO : possui
+    USUARIO o|--o{ MANUTENCAO : atende
+
+    CLIENTE {
+        bigint id PK
+        varchar razao_social
+        varchar nome_fantasia
+        varchar cnpj UK
+        varchar telefone
+        varchar email
+        datetime criado_em
+    }
+
+    OBRA {
+        bigint id PK
+        bigint cliente_id FK
+        varchar nome_obra
+        varchar cep
+        varchar cidade
+        varchar estado
+        varchar status
+        date data_inicio
+    }
+
+    MAQUINA {
+        bigint id PK
+        varchar prefixo UK
+        varchar tipo
+        varchar marca
+        varchar modelo
+        decimal horimetro_atual
+        varchar status
+    }
+
+    USUARIO {
+        bigint id PK
+        varchar username UK
+        varchar email UK
+        varchar perfil
+        boolean is_active
+    }
+
+    APONTAMENTO {
+        bigint id PK
+        bigint obra_id FK
+        bigint maquina_id FK
+        bigint usuario_id FK
+        date data_apontamento
+        decimal horimetro_inicial
+        decimal horimetro_final
+        decimal total_horas
+        datetime criado_em
+    }
+
+    MANUTENCAO {
+        bigint id PK
+        bigint maquina_id FK
+        bigint mecanico_id FK
+        varchar tipo
+        decimal horimetro_registro
+        datetime data_inicio
+        datetime data_conclusao
+        varchar status
+    }
+```
+
+## 6. Integridade e validações
+
+As regras abaixo devem ser consideradas na implementação:
+
+1.  O CNPJ do cliente deve ser único.
+2.  O prefixo da máquina deve ser único.
+3.  O e-mail e o nome de usuário devem respeitar a unicidade definida
+    para usuários.
+4.  Uma obra deve referenciar um cliente existente.
+5.  Um apontamento deve referenciar uma obra, uma máquina e um usuário
+    existentes.
+6.  Uma ordem de manutenção deve referenciar uma máquina existente.
+7.  O horímetro final de um apontamento deve ser maior que o inicial.
+8.  O total de horas deve corresponder à diferença entre as leituras.
+9.  O horímetro atual da máquina deve ser atualizado após um apontamento
+    válido.
+10. Registros que já estejam referenciados por apontamentos ou
+    manutenções não devem ser excluídos de forma que quebre o histórico.
+
+O documento inicial prevê proteção contra exclusão de clientes, obras,
+máquinas e usuários quando existem referências importantes. A
+configuração exata das chaves estrangeiras deverá seguir as regras de
+`on_delete` definidas nos Models.
+
+## 7. Tipos de dados e cuidados
+
+Campos de data devem usar tipos próprios de data ou data e hora, em vez
+de texto livre. Valores de horímetro devem usar um tipo decimal para
+preservar a casa decimal prevista e evitar problemas de arredondamento
+comuns em cálculos com ponto flutuante.
+
+Campos de status e tipo de manutenção devem aceitar apenas os valores
+definidos. No Django, isso pode ser implementado com escolhas
+(`choices`) e validações. Também é importante validar os dados recebidos
+pela API, pois uma requisição pode ser enviada sem utilizar os
+formulários da interface.
+
+## 8. Consultas esperadas
+
+O modelo deve permitir, entre outras, as seguintes consultas:
+
+-   listar obras por cliente, cidade ou status;
+-   consultar máquinas por tipo e situação;
+-   recuperar o histórico de apontamentos de uma máquina;
+-   consultar as horas registradas em uma obra por período;
+-   identificar máquinas com ordens de manutenção abertas;
+-   consultar o histórico de manutenção de uma máquina;
+-   verificar qual usuário registrou determinado apontamento.
+
+## 9. Pontos a confirmar durante a implementação
+
+A especificação define as entidades e seus principais campos, mas alguns
+detalhes precisam ser fechados durante a implementação:
+
+-   se haverá regra de unicidade para impedir mais de um apontamento da
+    mesma máquina na mesma data;
+-   como tratar uma troca ou correção de leitura de horímetro;
+-   qual será a política de edição de apontamentos já aprovados;
+-   como será configurado o limite de horas para manutenção preventiva;
+-   se os registros de clientes e máquinas terão exclusão lógica além
+    das restrições relacionais.
+
+Essas decisões devem ser registradas pela equipe antes de serem usadas
+como regras definitivas.
+
+## 10. Considerações finais
+
+O modelo relacional procura manter o histórico da operação sem perder a
+ligação entre os registros. Os vínculos entre clientes, obras, máquinas,
+apontamentos e manutenções permitem consultar as informações de forma
+consistente e servem de base para as telas e os endpoints descritos nos
+outros documentos.

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Relatório de horas</h1>
+    <!-- window.print abre a impressão do navegador (também salva em PDF) -->
+    <button onclick="window.print()" class="btn btn-outline-secondary nao-imprimir">Imprimir / PDF</button>
+</div>
+
+<!-- Totais gerais (aggregate) -->
+<div class="row g-3 mb-4">
+    <div class="col-6"><div class="card card-indicador card-body">
+        <small>Total de horas</small><span class="indicador-valor">{{ totais.horas|default:0 }}</span>
+    </div></div>
+    <div class="col-6"><div class="card card-indicador card-body">
+        <small>Apontamentos</small><span class="indicador-valor">{{ totais.quantidade }}</span>
+    </div></div>
+</div>
+
+<!-- Agrupados (values + annotate) -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <h2>Horas por obra</h2>
+        <table class="table">
+            <thead><tr><th>Obra</th><th>Apontamentos</th><th>Horas</th></tr></thead>
+            <tbody>
+            {% for linha in por_obra %}
+                <tr><td>{{ linha.obra__nome_obra }}</td><td>{{ linha.quantidade }}</td><td>{{ linha.horas }}</td></tr>
+            {% empty %}
+                <tr><td colspan="3">Nenhum apontamento registrado.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h2>Horas por máquina</h2>
+        <table class="table">
+            <thead><tr><th>Máquina</th><th>Apontamentos</th><th>Horas</th></tr></thead>
+            <tbody>
+            {% for linha in por_maquina %}
+                <tr><td>{{ linha.maquina__prefixo }}</td><td>{{ linha.quantidade }}</td><td>{{ linha.horas }}</td></tr>
+            {% empty %}
+                <tr><td colspan="3">Nenhum apontamento registrado.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

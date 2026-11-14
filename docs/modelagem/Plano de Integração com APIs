@@ -1,0 +1,197 @@
+Plano de Integração com APIs Externas --- Gestão As Terraplanagem
+
+1. Objetivo
+Este documento explica como o sistema Gestão Ás Terraplanagem pretende
+utilizar serviços externos. Nesta fase estão previstas duas integrações:
+ViaCEP, para consulta de endereço a partir do CEP, e OpenWeatherMap,
+para consulta das condições climáticas no local da obra.
+As integrações servem para facilitar o cadastro e apoiar o planejamento
+da operação. Como dependem de serviços fora do controle da aplicação,
+devem ter tratamento de falhas e não podem impedir o funcionamento das
+demais funções do sistema.
+
+2. Integração com ViaCEP
+2.1 Finalidade
+A API ViaCEP será utilizada durante o cadastro de uma obra. Ao informar
+o CEP, o usuário poderá receber automaticamente os campos de logradouro,
+bairro, cidade e unidade federativa. Isso reduz a quantidade de dados
+digitados manualmente e ajuda a evitar erros de preenchimento.
+2.2 Endpoint e método
+Método HTTP: GET
+Endpoint: https://viacep.com.br/ws/{cep}/json/
+Parâmetro: CEP com oito dígitos, sem pontuação.
+Exemplo de consulta:
+GET <https://viacep.com.br/ws/01001000/json/>
+​
+2.3 Dados utilizados
+A resposta do serviço contém informações de endereço. Para o cadastro da
+obra, os campos mais relevantes são:
+Campo retornado   Utilização no sistema
+cep             Preencher ou confirmar o CEP
+logradouro      Preencher o logradouro
+bairro          Preencher o bairro
+localidade      Preencher a cidade
+uf              Preencher o estado
+Outros campos que possam existir na resposta não precisam ser
+armazenados se não forem necessários ao cadastro definido no projeto.
+2.4 Fluxo previsto
+O usuário abre o formulário de cadastro de obra.
+Informa o CEP.
+O sistema verifica o formato básico do CEP.
+A aplicação consulta o ViaCEP por meio de uma requisição HTTP GET.
+Se o serviço localizar o CEP, o sistema preenche os campos de
+endereço.
+O usuário confere os dados e informa os demais campos, como nome da
+obra, número, cliente e data de início.
+O formulário é validado e a obra é salva.
+A consulta pode ser acionada pelo JavaScript da interface ou processada
+pela View Python antes de salvar o modelo. A escolha definitiva depende
+da implementação, mas o comportamento para o usuário deve ser o mesmo.
+2.5 Tratamento de falhas
+A integração deve considerar pelo menos estas situações:
+CEP com formato inválido;
+CEP não encontrado;
+timeout de rede;
+serviço indisponível;
+resposta inesperada.
+Quando não for possível consultar o endereço, o sistema deverá mostrar
+uma mensagem semelhante a:
+Não foi possível consultar o CEP automaticamente. Por favor, preencha
+o endereço manualmente.
+Os campos de endereço deverão ficar disponíveis para edição manual. A
+falha do ViaCEP não deve impedir o cadastro quando o usuário fornecer os
+dados necessários.
+2.6 Validação e segurança
+O CEP deve ser enviado sem pontuação ou normalizado antes da
+consulta.
+A resposta deve ser verificada antes de preencher os campos.
+A aplicação não deve confiar cegamente nos dados recebidos; o
+formulário precisa continuar passando pelas validações normais.
+Erros de conexão devem ser tratados sem expor informações internas.
+A aplicação deve evitar fazer chamadas repetidas desnecessárias
+enquanto o usuário ainda está digitando.
+
+3. Integração com OpenWeatherMap
+3.1 Finalidade
+A OpenWeatherMap será utilizada para apresentar informações climáticas
+atuais associadas à cidade da obra. Esse recurso pode ajudar a equipe a
+acompanhar condições que influenciam o planejamento de atividades de
+terraplanagem, especialmente em períodos de chuva.
+A informação climática é um apoio à consulta. Ela não substitui a
+avaliação dos responsáveis pela obra e não deve ser tratada como uma
+decisão automática de parar ou liberar o serviço.
+3.2 Endpoint e método
+Método HTTP: GET
+Endpoint: https://api.openweathermap.org/data/2.5/weather
+Parâmetros previstos:
+Parâmetro   Finalidade
+q         Cidade e país, por exemplo Brasilia,BRunits     metric, para utilizar unidades métricas
+appid     Chave de acesso da API
+lang      pt_br, para solicitar descrições em português
+Exemplo de formato de requisição:
+<https://api.openweathermap.org/data/2.5/weather?q={cidade},{pais>}&units=metric&appid={API_KEY}&lang=pt_br
+​
+A chave real deve ser configurada no ambiente de execução e não deve ser
+incluída diretamente no repositório.
+3.3 Dados utilizados
+Exemplo simplificado de resposta:
+{
+  "weather": [
+    {
+      "main": "Rain",
+      "description": "chuva moderada"
+    }
+  ],
+  "main": {
+    "temp": 24.5,
+    "humidity": 82
+  }
+}
+​
+O sistema poderá utilizar a descrição das condições, a temperatura e a
+umidade para exibição no painel. A estrutura exata da resposta deve ser
+verificada antes do acesso aos campos, pois a consulta pode retornar
+erros ou informações diferentes quando os parâmetros não forem válidos.
+3.4 Fluxo previsto
+O sistema identifica a cidade associada à obra.
+A aplicação verifica se existe uma resposta válida em cache.
+Se não houver uma resposta em cache, realiza a chamada à
+OpenWeatherMap.
+A aplicação verifica o código de resposta e os campos necessários.
+Se a consulta funcionar, os dados são apresentados no painel da
+obra.
+A resposta é armazenada em cache por duas horas para evitar chamadas
+repetidas.
+Se a consulta falhar, o painel apresenta uma mensagem de
+indisponibilidade e mantém o restante das informações operacionais
+acessível.
+3.5 Cache
+A especificação inicial prevê cache do Django por duas horas, utilizando
+django.core.cache. Isso diminui a quantidade de chamadas externas e
+ajuda a evitar o uso desnecessário da cota da API.
+A chave de cache deverá considerar a localização consultada, para que
+uma resposta de uma cidade não seja apresentada em outra. Quando o
+período de cache terminar, uma nova consulta poderá ser realizada.
+3.6 Tratamento de falhas
+A aplicação deve tratar situações como:
+indisponibilidade de rede;
+timeout;
+chave de API inválida;
+limite de requisições atingido;
+cidade não localizada;
+resposta sem os campos esperados.
+Quando não houver informação climática disponível, o painel deverá
+exibir:
+Informação climática indisponível no momento
+A falha da consulta não deve bloquear o carregamento do painel, o acesso
+às obras ou o registro de apontamentos.
+
+4. Configuração das credenciais
+A chave da OpenWeatherMap deve ser configurada por variável de ambiente
+ou mecanismo equivalente. O arquivo .env, se utilizado, não deve ser
+enviado ao GitHub quando contiver segredos reais.
+Exemplo ilustrativo de variável de ambiente:
+OPENWEATHERMAP_API_KEY=sua_chave_aqui
+​
+Esse exemplo não contém uma chave válida. A configuração deverá ser lida
+pelo Django de forma segura, e o projeto deve prever um arquivo de
+exemplo sem credenciais reais, caso utilize .env.
+
+5. Timeout e tratamento de exceções
+As chamadas HTTP devem utilizar um timeout para evitar que uma
+requisição fique aguardando indefinidamente. As exceções de conexão e
+timeout precisam ser tratadas pela aplicação.
+O tratamento deve diferenciar, sempre que possível, uma resposta sem
+resultado de um erro de conexão. Para o usuário, a mensagem deve ser
+simples; para a equipe, o sistema pode registrar informações técnicas
+suficientes para investigar o problema, sem guardar segredos.
+
+6. Testes das integrações
+Os testes não devem depender exclusivamente de chamadas reais aos
+serviços externos. Para verificar o comportamento da aplicação, é
+recomendável simular as respostas das APIs.
+6.1 Testes do ViaCEP
+CEP válido com resposta de endereço;
+CEP não encontrado;
+timeout de rede;
+erro HTTP do serviço;
+resposta inesperada;
+preenchimento manual após falha.
+6.2 Testes da OpenWeatherMap
+resposta válida com descrição, temperatura e umidade;
+chave inválida;
+cidade não localizada;
+timeout ou indisponibilidade;
+utilização do cache antes de realizar nova chamada;
+exibição da mensagem de indisponibilidade sem quebrar o painel.
+
+7. Limites das integrações
+O sistema depende da disponibilidade e das condições de uso definidas
+pelos serviços externos. A aplicação não controla a precisão dos dados
+de endereço ou clima. Também não deve armazenar ou divulgar a chave da
+OpenWeatherMap em respostas, logs públicos ou arquivos versionados.
+A consulta climática está prevista para o painel, mas a especificação
+não define automação de decisões operacionais com base no clima.
+Qualquer regra desse tipo precisaria ser discutida e documentada
+separadamente.
+

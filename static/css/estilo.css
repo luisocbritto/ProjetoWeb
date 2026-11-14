@@ -1,0 +1,32 @@
+/* Identidade visual definida nos protótipos da Fase 1 */
+:root {
+    --primaria: #D97706;    /* âmbar: botões principais */
+    --secundaria: #1E293B;  /* grafite: menu e cabeçalhos */
+    --fundo: #F8FAFC;
+    --texto: #334155;
+}
+
+body { font-family: 'Inter', sans-serif; background: var(--fundo); color: var(--texto); }
+h1 { font-size: 1.6rem; font-weight: 700; color: var(--secundaria); }
+h2 { font-size: 1.1rem; font-weight: 600; color: var(--secundaria); }
+
+.navbar-sistema { background: var(--secundaria); }
+.marca-nome { font-weight: 700; }
+
+.btn-primario { background: var(--primaria); color: #FFF; font-weight: 600; }
+.btn-primario:hover { background: #B45309; color: #FFF; }
+
+.card-indicador { border-left: 5px solid var(--primaria); }
+.indicador-valor { display: block; font-size: 1.8rem; font-weight: 700; color: var(--secundaria); }
+
+.table thead th { background: var(--secundaria); color: #FFF; }
+
+/* Status com cor + texto */
+.status { padding: 0.2em 0.6em; border-radius: 0.4rem; font-size: 0.8rem; font-weight: 600; }
+.status-DISPONIVEL, .status-CONCLUIDA { background: #DCFCE7; color: #166534; }
+.status-EM_USO, .status-EM_ANDAMENTO { background: #FEF3C7; color: #92400E; }
+.status-MANUTENCAO { background: #FEE2E2; color: #991B1B; }
+.status-PAUSADA { background: #E2E8F0; }
+
+/* Na impressão do relatório, esconde menu, botões e filtros */
+@media print { .navbar, .nao-imprimir { display: none !important; } }

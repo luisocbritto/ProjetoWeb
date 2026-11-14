@@ -1,0 +1,252 @@
+Contrato Inicial da API --- Gestão As Terraplanagem
+
+1. Objetivo
+Este documento descreve os endpoints iniciais previstos para a API REST
+do sistema Gestão Ás Terraplanagem. O contrato serve como referência
+para a implementação no Django REST Framework e para a criação de testes
+de integração.
+A API utilizará JSON nas requisições e respostas. Os exemplos deste
+documento são ilustrativos e mostram o formato esperado, não registros
+reais do banco.
+
+2. Convenções
+Formato de dados: JSON.
+Prefixo da API: /api/v1/.
+Autenticação: JWT nas rotas protegidas.
+Cabeçalho de autenticação:Authorization: Bearer <jwt_access_token>.
+Datas: formato ISO YYYY-MM-DD.
+Data e hora: formato ISO 8601.
+Códigos HTTP: indicam se a operação foi concluída, se os dados
+são inválidos ou se o acesso foi negado.
+As rotas devem validar os dados no servidor. Mesmo que o formulário faça
+verificações antes do envio, a API precisa rejeitar valores inválidos
+recebidos diretamente por uma requisição.
+
+3. Autenticação
+3.1 Obter token
+Endpoint: POST /api/v1/token/
+A rota é destinada à autenticação e geração de tokens JWT. O cliente
+envia as credenciais configuradas para o sistema e, se forem válidas,
+recebe os tokens previstos pela configuração de autenticação.
+O formato exato do corpo da requisição e da resposta deverá seguir a
+configuração escolhida para JWT na implementação. A documentação inicial
+prevê tokens de acesso e renovação, mas o contrato final deve ser
+confirmado quando a biblioteca e as configurações forem definidas.
+3.2 Utilizar o token
+Nas rotas protegidas, enviar o cabeçalho:
+Authorization: Bearer <jwt_access_token>
+​
+Se o token estiver ausente, inválido ou expirado, a API deverá negar o
+acesso e retornar 401 Unauthorized.
+
+4. Obras
+4.1 Listar obras
+Método: GET
+Endpoint: /api/v1/obras/
+Descrição: retorna as obras cadastradas. A consulta poderá ser
+filtrada por status e cidade.
+Parâmetros de consulta
+Parâmetro   Obrigatório   Descrição
+status    Não           Filtra pelo status da obra, como EM_ANDAMENTOcidade    Não           Filtra pelo nome da cidade
+Exemplo:
+GET /api/v1/obras/?status=EM_ANDAMENTO&cidade=São%20Paulo
+Authorization: Bearer <jwt_access_token>
+​
+Resposta de sucesso --- 200 OK
+[
+  {
+    "id": 1,
+    "cliente": {
+      "id": 10,
+      "nome_fantasia": "Construtora Horizonte"
+    },
+    "nome_obra": "Terraplanagem Rodoanel Trecho Sul",
+    "cep": "01001000",
+    "logradouro": "Praça da Sé",
+    "numero": "100",
+    "bairro": "Sé",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "status": "EM_ANDAMENTO",
+    "data_inicio": "2024-01-15"
+  }
+]
+​
+A resposta apresenta um exemplo de obra e de cliente associado. Os dados
+podem variar conforme os registros existentes.
+4.2 Criar obra
+Método: POST
+Endpoint: /api/v1/obras/
+Descrição: cadastra uma obra associada a um cliente existente.
+Exemplo de requisição
+{
+  "cliente_id": 10,
+  "nome_obra": "Loteamento Bela Vista",
+  "cep": "13010111",
+  "numero": "S/N",
+  "data_inicio": "2024-03-01"
+}
+​
+A aplicação deverá validar o cliente informado e os campos obrigatórios.
+A consulta de CEP poderá preencher os dados de endereço por meio do
+ViaCEP. Se a consulta falhar, deverá ser possível fornecer os dados de
+endereço manualmente.
+Resposta de sucesso --- 201 Created
+A API deverá retornar o objeto criado, incluindo o identificador e os
+dados de endereço que tenham sido obtidos ou confirmados durante o
+cadastro. O formato definitivo deverá acompanhar os campos do serializer
+implementado.
+Possíveis erros
+Código                              Situação
+400 Bad Request                   Dados inválidos ou campos
+obrigatórios ausentes
+401 Unauthorized                  Token ausente, inválido ou expirado
+403 Forbidden                     Usuário autenticado sem permissão
+para cadastrar obras
+404 Not Found Cliente informado não encontrado,
+se essa for a convenção adotada
+para a referência
+
+5. Máquinas
+5.1 Listar máquinas
+Método: GET
+Endpoint: /api/v1/maquinas/
+Descrição: retorna máquinas cadastradas. A consulta poderá ser
+filtrada por status ou tipo.
+Parâmetros de consulta
+Parâmetro   Obrigatório   Exemplo
+status    Não           DISPONIVELtipo      Não           Escavadeira
+Exemplo:
+GET /api/v1/maquinas/?status=DISPONIVEL&tipo=Escavadeira
+Authorization: Bearer <jwt_access_token>
+​
+Resposta de sucesso --- 200 OK
+[
+  {
+    "id": 5,
+    "prefixo": "ESC-003",
+    "tipo": "Escavadeira Hidráulica",
+    "marca": "Caterpillar",
+    "modelo": "320",
+    "horimetro_atual": 1450.5,
+    "status": "DISPONIVEL"
+  }
+]
+​
+O endpoint deve permitir consultar os dados necessários para selecionar
+um equipamento nos formulários de apontamento e manutenção. As
+permissões de acesso devem ser definidas conforme o perfil do usuário.
+
+6. Apontamentos
+6.1 Criar apontamento
+Método: POST
+Endpoint: /api/v1/apontamentos/
+Descrição: registra as horas de utilização de uma máquina em uma
+obra.
+Exemplo de requisição
+{
+  "obra_id": 1,
+  "maquina_id": 5,
+  "data_apontamento": "2024-02-28",
+  "horimetro_inicial": 1450.5,
+  "horimetro_final": 1458.0,
+  "observacoes": "Operação normal de escavação e carga de caminhões."
+}
+​
+O usuário que realizou o registro deverá ser identificado a partir da
+autenticação, evitando depender de um nome de usuário enviado livremente
+pelo cliente. A API deverá verificar se a obra e a máquina existem e se
+a máquina pode receber apontamentos.
+Validação do horímetro
+O valor final deve ser maior que o inicial. O total de horas será
+calculado pela diferença:
+total_horas = horimetro_final - horimetro_inicial
+No exemplo, o resultado é 7.5 horas.
+Resposta de sucesso --- 201 Created
+{
+  "id": 102,
+  "obra": 1,
+  "maquina": 5,
+  "data_apontamento": "2024-02-28",
+  "horimetro_inicial": 1450.5,
+  "horimetro_final": 1458.0,
+  "total_horas": 7.5,
+  "usuario_registro": "apontador_joao",
+  "criado_em": "2024-02-28T17:30:00Z"
+}
+​
+Depois de salvar com sucesso, o sistema deverá atualizar o horímetro
+atual da máquina para o valor final validado.
+6.2 Erro de validação --- 400 Bad Request
+Se o horímetro final for menor ou igual ao inicial, a API deverá
+retornar um erro de validação. Exemplo:
+{
+  "horimetro_final": [
+    "O horímetro final deve ser maior que o horímetro inicial."
+  ]
+}
+​
+O texto exato pode ser ajustado na implementação, mas a resposta precisa
+indicar qual campo está inválido.
+6.3 Erro de autenticação --- 401 Unauthorized
+Esse código será retornado quando a requisição protegida não apresentar
+um token válido.
+6.4 Outras validações necessárias
+A obra deve existir e estar apta a receber apontamentos.
+A máquina deve existir e não estar em manutenção.
+Os valores de horímetro devem ser numéricos e válidos.
+A data deve seguir o formato previsto.
+O usuário responsável deve ser identificado.
+A atualização do apontamento e do horímetro atual precisa ser feita
+de maneira consistente para evitar divergências.
+
+7. Padrão de erros
+A API deverá retornar códigos HTTP adequados e mensagens que ajudem o
+cliente a entender o que ocorreu.
+Código                        Significado geral       Exemplo de uso
+200 OK                      Consulta concluída      Lista de obras ou
+máquinas
+201 Created                 Registro criado         Nova obra ou
+apontamento
+400 Bad Request             Dados inválidos         Horímetro final menor
+que o inicial
+401 Unauthorized            Falha de autenticação   Token ausente ou
+inválido
+403 Forbidden               Sem permissão para a    Perfil sem acesso ao
+ação                    cadastro
+404 Not Found               Recurso não encontrado  Identificador
+inexistente
+500 Internal Server Error Erro inesperado no Falha não tratada
+servidor durante o processamento
+A implementação deverá evitar retornar rastreamentos de erro ou detalhes
+internos da aplicação ao usuário final.
+
+8. Permissões
+As rotas deverão ser protegidas de acordo com o tipo de operação. O
+documento inicial prevê perfis de administrador, engenheiro, apontador e
+mecânico. A matriz final de permissões deverá ser confirmada antes da
+implementação, mas como referência:
+Operação                            Perfil que deve ter acesso
+Gerenciar usuários e perfis         Administrador
+Criar e atualizar obras             Engenheiro/gerente e administrador,
+conforme configuração
+Consultar máquinas                  Usuários autorizados
+Registrar apontamento               Apontador/operador e demais perfis
+autorizados
+Abrir e concluir manutenção Mecânico/chefe de manutenção e
+administrador, conforme
+configuração
+Essa tabela é uma referência inicial. As permissões definitivas precisam
+ser aplicadas e testadas no servidor.
+
+9. Testes do contrato
+Os testes da API deverão conferir:
+resposta 200 para consultas válidas;
+resposta 201 ao criar um registro válido;
+rejeição de campos obrigatórios ausentes;
+rejeição de referências inexistentes;
+validação do cálculo de horas;
+resposta 400 para horímetro inválido;
+resposta 401 sem autenticação;
+bloqueio de operações não permitidas ao perfil;
+formato e conteúdo das respostas JSON.

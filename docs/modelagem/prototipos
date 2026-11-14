@@ -1,0 +1,249 @@
+Protótipos e Identidade Visual --- Gestão as Terraplanagem
+
+1. Objetivo
+Este documento reúne as decisões iniciais de identidade visual e
+descreve as telas principais previstas para o sistema Gestão Ás
+Terraplanagem. A proposta é manter uma interface fácil de entender e
+adequada ao uso em ambientes de obra, onde os usuários podem acessar o
+sistema por computadores, tablets e smartphones.
+A identidade visual funciona como referência para a construção dos
+templates HTML e para a aplicação dos estilos com Tailwind CSS. Os
+exemplos de tela deste documento são wireframes textuais, ou seja,
+mostram a organização dos elementos, mas não substituem o protótipo
+visual final.
+
+2. Nome do projeto
+Gestão As Terraplanagem
+O nome deve ser utilizado de forma consistente no cabeçalho, na tela de
+login, nos documentos do projeto e nos materiais de apresentação. A
+assinatura visual prevista é Ás Terraplanagem — Gestão Operacional.
+
+3. Proposta visual
+A interface seguirá uma linha industrial moderna, com cores que lembram
+máquinas, terra e equipamentos de trabalho. O uso de contraste é
+importante porque parte dos acessos poderá acontecer em locais com luz
+solar direta.
+A proposta não é encher a tela de elementos decorativos. O foco deve
+ficar nos dados que o usuário precisa consultar ou preencher, como a
+situação da frota, os dados da obra, o horímetro e o estado das ordens
+de serviço.
+Princípios que devem orientar as telas:
+destacar as ações mais utilizadas;
+manter os formulários organizados e com rótulos claros;
+mostrar mensagens de erro perto do campo relacionado;
+diferenciar visualmente estados como disponível, em uso e em
+manutenção;
+evitar tabelas excessivamente largas em telas pequenas;
+manter os mesmos padrões de cores, botões e títulos em todas as
+páginas.
+
+4. Paleta de cores
+Uso               Cor               Código            Aplicação
+hexadecimal       prevista
+Cor primária      Âmbar             #D97706         Botões
+principais,
+destaques e
+marcações de
+atenção
+Cor secundária    Grafite escuro    #1E293B         Navegação,
+cabeçalhos e
+menus
+Fundo             Cinza muito claro #F8FAFC         Fundo geral das
+páginas
+Texto principal   Cinza azulado     #334155         Textos, rótulos e
+conteúdo
+Bordas e          Cinza claro       #E2E8F0         Contornos de
+divisores                                             campos, tabelas e
+cartões
+Sucesso /         Verde             #16A34A         Estado
+disponível                                            operacional e
+confirmações
+Erro / manutenção Vermelho #DC2626 Alertas, erros e
+indicação de
+manutenção
+As cores não devem ser o único recurso utilizado para transmitir um
+estado. Sempre que houver status, a tela também deve exibir um texto,
+como Disponível ou Em manutenção, para que a informação continue
+compreensível.
+
+5. Tipografia
+A fonte principal definida é Inter, com alternativa genérica
+sans-serif.
+A hierarquia inicial proposta é:
+Elemento                        Tamanho de referência   Peso
+Título principal da tela (H1)   22 pt                   Negrito
+Título de seção (H2)            12 pt                   Seminegrito
+Texto de tabela e formulário    10 pt                   Regular
+Essas medidas são referências do documento inicial. Durante a
+implementação, será necessário conferir a legibilidade em diferentes
+resoluções e ajustar os tamanhos quando necessário. O texto de campos,
+botões e mensagens deve continuar legível em tablets e smartphones.
+
+6. Logotipo e assinatura visual
+A proposta de logotipo utiliza um símbolo de ás estilizado que remete à
+lâmina de um trator de esteira. Ao lado do símbolo deve aparecer o nome
+Ás Terraplanagem, acompanhado da assinatura Gestão Operacional.
+A marca deverá funcionar em tamanhos diferentes, tanto no cabeçalho
+completo quanto em uma versão reduzida para telas menores. O símbolo não
+deve prejudicar a leitura do nome do sistema.
+A arte final do logotipo deverá ser produzida e mantida em formato
+adequado para uso na interface, como SVG ou PNG. Caso seja criada em uma
+ferramenta de design, recomenda-se manter o arquivo editável e uma
+exportação para uso no sistema.
+
+7. Componentes visuais
+7.1 Navegação
+A navegação principal deve oferecer acesso às áreas mais utilizadas:
+Obras;
+Máquinas;
+Apontamentos;
+Manutenção;
+Área do usuário.
+Os itens disponíveis devem respeitar o perfil autenticado. Um usuário
+não deve conseguir executar uma operação apenas por conhecer o endereço
+da página.
+7.2 Botões
+Os botões devem usar rótulos diretos, como Salvar apontamento,
+Nova obra, Abrir ordem de serviço e Cancelar. A ação principal
+pode utilizar a cor primária, enquanto ações secundárias devem ter menor
+destaque.
+A interface precisa apresentar feedback depois de uma ação, indicando se
+o registro foi salvo ou se há algo para corrigir.
+7.3 Formulários
+Os campos devem possuir rótulos visíveis, exemplos quando forem úteis e
+mensagens de validação específicas. Os campos obrigatórios precisam ser
+identificados de forma consistente.
+No formulário de apontamento, o horímetro inicial deve ser preenchido
+pelo sistema com o valor atual da máquina. O usuário informa o valor
+final, e a interface apresenta o total calculado.
+7.4 Tabelas e cartões
+O painel pode utilizar cartões para apresentar indicadores resumidos,
+como quantidade de máquinas disponíveis, equipamentos em manutenção e
+obras em andamento. As tabelas devem permitir localizar os dados
+relevantes sem excesso de informação.
+Em telas pequenas, é necessário adaptar as tabelas para evitar que os
+campos fiquem ilegíveis. Pode ser usada rolagem horizontal ou uma
+apresentação alternativa em blocos, desde que as informações principais
+continuem disponíveis.
+
+8. Wireframe 1 --- Dashboard operacional
+O dashboard será a tela de visão geral após a autenticação. Deve ajudar
+o usuário a entender rapidamente a situação da operação.
++--------------------------------------------------------------------------+
+| [LOGO ÁS TERRAPLANAGEM]  Obras  Máquinas  Apontamentos  Manutenção  [User]|
++--------------------------------------------------------------------------+
+| DASHBOARD OPERACIONAL                                                    |
+|                                                                          |
+| +-------------------+ +-------------------+ +--------------------------+ |
+| | Frota disponível  | | Em manutenção     | | Obras em andamento       | |
+| | 24 máquinas       | | 3 máquinas        | | 5 canteiros              | |
+| +-------------------+ +-------------------+ +--------------------------+ |
+|                                                                          |
+| RESUMO DIÁRIO DE APONTAMENTOS                                            |
+| +---------------------------------------------------------------------+  |
+| | Máquina | Obra              | Horímetro ini. | Horímetro fin. | Horas| |
+| +---------------------------------------------------------------------+  |
+| | ESC-001 | Rodoanel Sul      | 1250,0         | 1258,5         | 8,5  | |
+| | TRAT-002| Loteamento Center | 890,2          | 897,0          | 6,8  | |
+| +---------------------------------------------------------------------+  |
+|                                                                          |
+| [Consultar obras]                       [Consultar máquinas]             |
++--------------------------------------------------------------------------+
+​
+Os números e registros acima são exemplos usados para explicar a
+disposição dos componentes. Eles não devem ser considerados valores
+reais da operação nem valores fixos da interface. No sistema
+implementado, os indicadores deverão vir dos dados cadastrados.
+8.1 Elementos do dashboard
+Cabeçalho com logotipo e navegação.
+Indicadores resumidos da frota e das obras.
+Tabela com os apontamentos recentes ou do período selecionado.
+Acesso às áreas de obras e máquinas.
+Espaço para informação climática da obra, quando estiver disponível.
+Mensagens de carregamento, ausência de dados e falha de consulta.
+
+9. Wireframe 2 --- Apontamento diário de horas
+O formulário de apontamento precisa priorizar rapidez e evitar erros no
+registro do horímetro.
++--------------------------------------------------------------------------+
+| REGISTRO DE APONTAMENTO DIÁRIO DE MÁQUINA                                |
++--------------------------------------------------------------------------+
+| Data do apontamento: [ 28/02/2024 ]                                      |
+|                                                                          |
+| Obra:   [ Obra Rodoanel Trecho Sul                       v ]              |
+| Máquina:[ ESC-001 - Escavadeira CAT 320                  v ]              |
+|                                                                          |
+| +--------------------------------+ +-----------------------------------+ |
+| | Horímetro inicial (automático) | | Horímetro final (informado)       | |
+| | [ 1250,0                     ] | | [ 1258,5                         ] | |
+| +--------------------------------+ +-----------------------------------+ |
+|                                                                          |
+| Total calculado: 8,5 horas                                               |
+|                                                                          |
+| Observações operacionais:                                                |
+| [ Escavação de vala para drenagem no setor B-3                         ]  |
+|                                                                          |
+| [ SALVAR APONTAMENTO ]  [ CANCELAR ]                                     |
++--------------------------------------------------------------------------+
+​
+9.1 Comportamento esperado
+O usuário escolhe a data, a obra e a máquina.
+O sistema apresenta o horímetro atual como valor inicial.
+O usuário informa o horímetro final.
+O total de horas é calculado.
+Se o valor final não for maior que o inicial, o sistema apresenta um
+erro e não permite salvar.
+Se os dados forem válidos, o usuário salva o apontamento.
+Depois da gravação, o sistema atualiza o horímetro atual da máquina.
+A interface pode ajudar a calcular o total antes do envio, mas a
+validação definitiva deve ocorrer no servidor.
+
+10. Estados e mensagens
+A interface deve tratar estados comuns sem deixar o usuário sem
+orientação.
+Situação                            Mensagem ou comportamento
+Carregamento                        Indicar que os dados estão sendo carregados
+Lista vazia                         Informar que ainda não há registros para mostrar
+Cadastro concluído                  Confirmar que o registro foi salvo
+Campo inválido                      Mostrar o erro junto ao campo
+Falha no ViaCEP                     Permitir o preenchimento manual do endereço
+Falha no clima                      Mostrar
+Informação climática indisponível no momento
+Máquina em manutenção               Indicar o estado e impedir apontamento
+operacional normal
+Usuário sem permissão Informar que a operação não está disponível para
+aquele perfil
+
+11. Responsividade e acessibilidade
+Como o sistema pode ser utilizado em campo, a interface deve se adaptar
+a diferentes larguras de tela. Os controles precisam ter áreas de
+interação adequadas para toque e os formulários não devem depender de
+elementos muito pequenos.
+Também é importante manter contraste suficiente entre texto e fundo, não
+utilizar apenas cores para representar estados e associar os campos aos
+seus rótulos. Mensagens de erro devem explicar o que precisa ser
+corrigido, em vez de mostrar apenas uma indicação genérica.
+
+12. Relação com a implementação
+A proposta visual deverá ser aplicada aos templates Django, com Tailwind
+CSS para os estilos. Os elementos que se repetem, como cabeçalho,
+navegação, botões e mensagens, devem manter o mesmo padrão entre as
+páginas.
+Antes de considerar as telas concluídas, a equipe deverá testar o layout
+com dados longos, listas vazias, erros de validação e larguras de tela
+diferentes. Isso ajuda a encontrar problemas que não aparecem quando se
+utiliza apenas um exemplo simples.
+
+13. Arquivos de design
+Se os protótipos forem criados em ferramenta própria, o repositório
+deverá guardar o arquivo editável e uma exportação para consulta rápida,
+conforme solicitado na atividade. Os diagramas e as imagens devem
+possuir título e ser legíveis, não sendo suficiente anexar uma captura
+de tela pequena sem contexto.
+
+14. Considerações finais
+A identidade visual foi pensada para manter uma aparência coerente com o
+contexto de terraplanagem, sem tirar o foco das tarefas diárias. O
+principal critério é que o usuário consiga localizar a informação e
+concluir o registro com poucos passos, mesmo quando estiver utilizando
+um tablet no canteiro.

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<!-- Mesmo formulário para cadastrar e editar: obra.id existe só na edição -->
+<h1>{% if obra.id %}Editar obra{% else %}Nova obra{% endif %}</h1>
+
+<form method="post" class="card card-body">
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Cliente</label>
+            <select name="cliente_id" class="form-select">
+                <option value="">Selecione...</option>
+                {% for c in clientes %}
+                <option value="{{ c.id }}" {% if c.id|stringformat:'s' == obra.cliente_id|stringformat:'s' %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+            <div class="text-danger small">{{ erros.cliente.0 }}</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Nome da obra</label>
+            <input name="nome_obra" value="{{ obra.nome_obra }}" class="form-control" maxlength="150">
+            <div class="text-danger small">{{ erros.nome_obra.0 }}</div>
+        </div>
+
+        <!-- O botão chama a view buscar_cep, que consulta o ViaCEP -->
+        <div class="col-md-4">
+            <label class="form-label">CEP</label>
+            <div class="input-group">
+                <input name="cep" id="cep" value="{{ obra.cep }}" class="form-control" maxlength="9">
+                <button type="button" id="btn-cep" class="btn btn-outline-secondary">Buscar CEP</button>
+            </div>
+            <div id="msg-cep" class="small text-danger">{{ erros.cep.0 }}</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Logradouro</label>
+            <input name="logradouro" id="logradouro" value="{{ obra.logradouro }}" class="form-control" maxlength="200">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Número</label>
+            <input name="numero" value="{{ obra.numero }}" class="form-control" maxlength="20">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Bairro</label>
+            <input name="bairro" id="bairro" value="{{ obra.bairro }}" class="form-control" maxlength="100">
+        </div>
+        <div class="col-md-5">
+            <label class="form-label">Cidade</label>
+            <input name="cidade" id="cidade" value="{{ obra.cidade }}" class="form-control" maxlength="100">
+            <div class="text-danger small">{{ erros.cidade.0 }}</div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">UF</label>
+            <input name="estado" id="estado" value="{{ obra.estado }}" class="form-control" maxlength="2">
+            <div class="text-danger small">{{ erros.estado.0 }}</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+                {% for valor, nome in status_choices %}
+                <option value="{{ valor }}" {% if valor == obra.status %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Data de início</label>
+            <input type="date" name="data_inicio" value="{% if obra.data_inicio %}{{ obra.data_inicio|stringformat:'s' }}{% endif %}" class="form-control">
+            <div class="text-danger small">{{ erros.data_inicio.0 }}</div>
+        </div>
+    </div>
+    <div class="mt-3">
+        <button class="btn btn-primario">Salvar</button>
+        <a href="{% url 'listar_obras' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Ao clicar em "Buscar CEP", pede o endereço ao nosso servidor e preenche os campos
+document.getElementById('btn-cep').onclick = async function () {
+    const cep = document.getElementById('cep').value;
+    const resposta = await fetch("{% url 'buscar_cep' %}?cep=" + cep);
+    const dados = await resposta.json();
+    if (dados.erro) {
+        document.getElementById('msg-cep').textContent = dados.erro;
+        return;
+    }
+    document.getElementById('msg-cep').textContent = '';
+    document.getElementById('logradouro').value = dados.logradouro;
+    document.getElementById('bairro').value = dados.bairro;
+    document.getElementById('cidade').value = dados.cidade;
+    document.getElementById('estado').value = dados.estado;
+};
+</script>
+{% endblock %}

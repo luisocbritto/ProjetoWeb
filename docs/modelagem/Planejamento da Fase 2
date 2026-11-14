@@ -1,0 +1,274 @@
+Planejamento da Fase 2 --- Gestão As Terraplanagem
+
+1. Objetivo
+A Fase 2 será dedicada à implementação prática do sistema Gestão Ás
+Terraplanagem. Depois da definição dos requisitos e da arquitetura, o
+trabalho passa para a configuração do ambiente, criação dos modelos,
+desenvolvimento das telas e endpoints, integração com os serviços
+externos, testes e preparação do deploy em homologação.
+O planejamento abaixo utiliza as tarefas e os marcos previstos no
+documento da Fase 1. Os responsáveis estão indicados por função, pois a
+distribuição entre os integrantes deverá ser confirmada pelo grupo.
+
+2. Entregas esperadas
+Ao final da fase, a equipe pretende ter:
+ambiente Django configurado com PostgreSQL e Docker Compose;
+modelos principais criados e relacionados;
+validações de apontamento e manutenção implementadas;
+templates HTML com Tailwind CSS para as telas essenciais;
+endpoints REST com autenticação JWT;
+integração com ViaCEP e OpenWeatherMap;
+testes unitários e de API;
+pipeline de CI/CD configurado no GitHub Actions;
+aplicação disponível em ambiente de homologação;
+documentação atualizada de acordo com o código implementado.
+Esses itens são metas de trabalho. A entrega só deverá ser considerada
+concluída depois de verificar o funcionamento e registrar os resultados
+dos testes.
+
+3. Backlog de tarefas
+Código         Tarefa            Responsável       Prioridade     Resultado
+previsto                         esperado
+TK-01          Configuração      Desenvolvimento   Alta           Ambiente de
+inicial do        backend / DevOps                 desenvolvimento
+Django,                                            preparado e
+PostgreSQL e                                       executável
+Docker Compose
+TK-02          Criação dos       Desenvolvimento   Alta           Modelos iniciais,
+Models de         backend                          relações e
+usuário, cliente,                                  migrações criadas
+obra e máquina
+TK-03          Implementação dos Desenvolvimento   Alta           Regras de
+Models e          backend                          horímetro e
+validações de                                      estados de
+apontamento e                                      manutenção
+manutenção                                         verificadas
+TK-04          Desenvolvimento   Desenvolvimento   Média          Telas principais
+dos templates     frontend / UI                    organizadas e
+HTML e estilos                                     responsivas
+Tailwind
+TK-05          Implementação dos Desenvolvimento   Alta           API com rotas e
+endpoints REST    backend                          controle de
+com autenticação                                   acesso
+JWT
+TK-06          Integração ViaCEP Desenvolvimento   Média          Consultas
+e OpenWeatherMap  backend                          externas com
+tratamento de
+falhas
+TK-07          Implementação de  QA / testes       Média          Testes
+testes unitários                                   executáveis e
+e de carga                                         resultados
+registrados
+TK-08 Configuração do DevOps Alta Pipeline
+pipeline CI/CD no executando
+GitHub Actions e verificações e
+deploy aplicação
+preparada para
+homologação
+
+4. Cronograma previsto
+O cronograma inicial está organizado em oito semanas. Ele pode ser
+ajustado conforme a disponibilidade da equipe e os problemas encontrados
+durante a implementação.
+Período                 Atividades principais   Resultado esperado
+Semanas 1--2            Configuração de         Ambiente funcionando e
+infraestrutura, Docker, primeiros cadastros
+banco e cadastro base   preparados
+de usuários e obras
+Semanas 3--4            Módulo de apontamento e Registro de horas com
+validação de horímetro  cálculo e bloqueio de
+valores inválidos
+Semanas 5--6            Módulo de manutenção,   Ordens de serviço e
+integrações externas e  endpoints principais
+API REST                implementados
+Semanas 7--8 Testes automatizados, Versão integrada
+ajustes de UI/UX e testada e preparada
+deploy de homologação para avaliação
+A sequência é uma referência para organizar o trabalho, não uma garantia
+de que cada etapa será concluída exatamente no período indicado. Tarefas
+de alta prioridade devem ser acompanhadas com mais frequência porque
+afetam outras entregas.
+
+5. Dependências entre tarefas
+Algumas tarefas dependem de outras para serem realizadas corretamente:
+TK-01 precisa estar pronta para que a equipe execute e teste a
+aplicação no ambiente definido.
+TK-02 estabelece as entidades que serão utilizadas pelas demais
+funcionalidades.
+TK-03 depende dos modelos de máquinas, apontamentos e manutenção.
+TK-04 depende dos fluxos e campos definidos na documentação, mas
+pode evoluir em paralelo com o backend.
+TK-05 depende dos modelos e das regras de validação necessárias para
+as rotas.
+TK-06 depende dos cadastros de obras e da configuração das chamadas
+externas.
+TK-07 deve acompanhar o desenvolvimento, mesmo que a etapa de testes
+mais ampla esteja prevista para as semanas finais.
+TK-08 pode começar pela configuração básica e ser refinada à medida
+que os testes e o ambiente ficam disponíveis.
+
+6. Estratégia de desenvolvimento
+O projeto utilizará Gitflow como referência para organizar as
+alterações. As funcionalidades serão desenvolvidas em branches próprias,
+seguindo um padrão como:
+feature/nome-da-funcionalidade
+​
+As branches de funcionalidade serão integradas à branch develop por
+meio de Pull Requests. A revisão de código deverá ser realizada antes da
+integração.
+6.1 Fluxo de trabalho sugerido
+Selecionar uma tarefa do backlog.
+Confirmar o resultado esperado e os critérios de aceitação.
+Criar uma branch para a alteração.
+Implementar a funcionalidade e os testes relacionados.
+Executar os testes localmente.
+Abrir um Pull Request com uma descrição objetiva.
+Solicitar revisão de outro integrante.
+Corrigir os pontos identificados.
+Integrar a alteração depois da aprovação.
+Atualizar o status da tarefa e a documentação, quando necessário.
+As branches não devem conter arquivos de ambiente com segredos ou
+credenciais reais. As alterações devem ser pequenas o suficiente para
+facilitar a revisão.
+
+7. Estratégia de testes
+Os testes devem acompanhar a implementação para que os problemas sejam
+identificados antes da etapa de homologação.
+7.1 Testes unitários
+Devem verificar regras específicas sem depender de toda a aplicação.
+Exemplos:
+cálculo de horas a partir dos horímetros;
+rejeição de horímetro final menor ou igual ao inicial;
+validação de status e tipo de manutenção;
+regras de atualização do horímetro atual;
+validação de campos obrigatórios.
+A especificação prevê o uso de pytest-django para os testes
+relacionados ao Django.
+7.2 Testes de API
+Devem conferir os endpoints, os formatos JSON e os códigos de resposta.
+É importante testar tanto o caminho de sucesso quanto os casos de erro.
+Casos previstos:
+listar obras e máquinas;
+criar uma obra com dados válidos;
+criar um apontamento válido;
+rejeitar horímetro inválido;
+rejeitar requisição sem token;
+verificar o bloqueio de usuário sem permissão;
+validar referências para clientes, obras e máquinas inexistentes.
+7.3 Testes das integrações externas
+As chamadas ao ViaCEP e à OpenWeatherMap devem ser testadas em cenários
+de sucesso e falha. Sempre que possível, os testes devem simular as
+respostas dos serviços para não depender de disponibilidade externa
+durante cada execução.
+7.4 Testes de interface
+A equipe deve verificar os formulários em diferentes tamanhos de tela, a
+exibição das mensagens de validação e o comportamento quando não existem
+registros. Também deve conferir se a interface permite preencher
+manualmente o endereço quando o ViaCEP falhar.
+7.5 Testes de carga
+O backlog prevê testes de carga. A equipe deverá definir quais endpoints
+serão avaliados, qual volume de requisições será utilizado e como os
+resultados serão registrados. Os testes precisam ocorrer em ambiente
+controlado, sem prejudicar usuários reais.
+
+8. Cobertura de testes
+A meta inicial é atingir pelo menos 80% de cobertura de código antes
+de autorizar a integração em produção.
+A cobertura é uma medida auxiliar: ela indica quais partes do código
+foram executadas pelos testes, mas não garante sozinha que todas as
+regras estejam corretas. Por isso, os testes devem verificar os
+resultados esperados e incluir situações de erro.
+
+9. Integração contínua e entrega
+O pipeline previsto será configurado no GitHub Actions. A automação
+deverá executar as verificações definidas pela equipe antes de permitir
+que uma alteração avance no fluxo de integração.
+Como base, o pipeline pode ser organizado para:
+preparar o ambiente Python;
+instalar as dependências;
+executar verificações de código adotadas pelo grupo;
+executar os testes automatizados;
+informar o resultado da execução no Pull Request;
+preparar o processo de deploy para homologação quando as etapas
+anteriores forem aprovadas.
+Os comandos e as etapas definitivas dependem da configuração do
+repositório. Não se deve considerar o pipeline concluído até que uma
+execução real seja verificada.
+
+10. Ambiente de homologação
+A aplicação deverá ser disponibilizada em ambiente de homologação para
+que a equipe possa testar o fluxo completo antes de uma eventual
+publicação final.
+A validação deve incluir:
+inicialização da aplicação;
+aplicação das migrações;
+autenticação;
+cadastro e consulta de obras;
+consulta de máquinas;
+criação de apontamentos;
+validação do horímetro;
+abertura e conclusão de manutenção;
+comportamento das integrações quando estão disponíveis e quando
+falham;
+conferência de logs e mensagens de erro.
+As credenciais e chaves utilizadas no ambiente de homologação devem ser
+configuradas de forma segura e separadas do código-fonte.
+
+11. Riscos e medidas de acompanhamento
+Risco                   Impacto                 Medida de
+acompanhamento
+Atraso na configuração  Bloqueia o              Priorizar TK-01 e
+do ambiente             desenvolvimento das     registrar os problemas
+demais tarefas          encontrados
+Divergência entre API e Formulários podem       Definir os contratos e
+interface               enviar dados em formato revisar exemplos JSON
+incorreto
+Validações incompletas  Dados inconsistentes no Criar testes para
+banco                   regras de horímetro e
+status
+Falha de serviço        Parte da informação não Implementar fallback e
+externo                 fica disponível         testar
+indisponibilidade
+Pouco tempo para testes Erros chegam à          Escrever testes durante
+homologação             o desenvolvimento, não
+apenas no final
+Conflitos de código     Atraso na integração    Usar Pull Requests
+das branches            menores e revisão entre
+integrantes
+Segredos versionados Risco de acesso Utilizar variáveis de
+por engano indevido ambiente e revisar
+arquivos antes do
+commit
+
+12. Critérios de conclusão da fase
+A Fase 2 poderá ser considerada pronta para avaliação quando:
+o ambiente de desenvolvimento estiver documentado e puder ser
+iniciado;
+os modelos e as relações principais estiverem implementados;
+os fluxos de obra, apontamento e manutenção estiverem disponíveis;
+a API tiver autenticação e validações;
+as integrações externas tiverem tratamento de falhas;
+os testes definidos pela equipe estiverem executando;
+a cobertura de testes for medida e comparada à meta de 80%;
+o pipeline tiver uma execução verificada;
+a aplicação estiver disponível em homologação;
+os documentos forem atualizados para refletir o que foi realmente
+implementado.
+Se algum item não for concluído, a equipe deverá registrar o que falta e
+o motivo, em vez de marcar a entrega como finalizada sem verificação.
+
+13. Acompanhamento do backlog
+O grupo deverá manter o status das tarefas atualizado no GitHub Issues
+ou em ferramenta equivalente. Cada tarefa deve possuir uma descrição
+clara, um responsável, prioridade e critérios de conclusão.
+Uma tarefa não deve ser encerrada apenas porque o código foi escrito. É
+necessário verificar se ela atende ao resultado esperado e se os testes
+relacionados foram executados.
+
+14. Considerações finais
+O planejamento divide a implementação em etapas para que a equipe
+consiga trabalhar nas partes principais sem perder a visão do conjunto.
+A prioridade é ter primeiro uma base estável de dados e autenticação,
+depois implementar os fluxos operacionais e, por fim, testar o
+funcionamento integrado em homologação. A documentação deve acompanhar
+esse processo e ser corrigida sempre que uma decisão mudar.

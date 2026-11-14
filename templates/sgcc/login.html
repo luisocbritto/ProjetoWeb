@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <h1 class="text-center mb-4">Entrar</h1>
+        <form method="post" class="card card-body">
+            {% csrf_token %}
+            <label class="form-label">Usuário</label>
+            <input type="text" name="username" class="form-control mb-3" required autofocus>
+            <label class="form-label">Senha</label>
+            <input type="password" name="password" class="form-control mb-3" required>
+            <button class="btn btn-primario">Entrar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
