@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Logotipo Ás Terraplanagem">
-  <title>Ás Terraplanagem</title>
-  <rect x="2" y="2" width="60" height="60" rx="12" fill="#D97706"/>
-  <!-- Ás estilizado: um "A" formado pela lâmina inclinada de um trator -->
-  <path d="M32 11 L50 47 H41 L32 27 L23 47 H14 Z" fill="#1E293B"/>
-  <rect x="24" y="37" width="16" height="5" fill="#1E293B"/>
-  <!-- Lâmina do trator -->
-  <path d="M10 51 Q32 57 54 51 L54 55 Q32 61 10 55 Z" fill="#FFFFFF"/>
-</svg>
